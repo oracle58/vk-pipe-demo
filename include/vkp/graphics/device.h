@@ -1,25 +1,28 @@
 #pragma once
 
 #include <vkp/gui/window.h>
-
 #include <vector>
 
 namespace vkp::graphics {
 
+ // Holds all swap chain support details for a physical device.
  struct SwapChainSupportDetails {
    VkSurfaceCapabilitiesKHR capabilities;
    std::vector<VkSurfaceFormatKHR> formats;
    std::vector<VkPresentModeKHR> presentModes;
  };
 
+ // Stores queue family indices and their validity.
  struct QueueFamilyIndices {
    uint32_t graphicsFamily{};
    uint32_t presentFamily{};
    bool graphicsFamilyHasValue = false;
    bool presentFamilyHasValue = false;
+   // Returns true if both graphics and present families are found.
    [[nodiscard]] bool isComplete() const { return graphicsFamilyHasValue && presentFamilyHasValue; }
  };
 
+ // Encapsulates Vulkan device and related resource management.
  class Device {
   public:
  #ifdef NDEBUG
@@ -28,28 +31,30 @@ namespace vkp::graphics {
    const bool enableValidationLayers = true;
  #endif
 
-   explicit Device(Window &window);
+   explicit Device(Window &window); // Initializes Vulkan device for the given window.
    ~Device();
 
-   // Not copyable or movable
+   // Not copyable or movable: device resources must not be duplicated.
    Device(const Device &) = delete;
    void operator=(const Device &) = delete;
    Device(Device &&) = delete;
    Device &operator=(Device &&) = delete;
 
+   // Accessors for Vulkan handles.
    [[nodiscard]] VkCommandPool getCommandPool() const { return commandPool; }
    [[nodiscard]] VkDevice device() const { return device_; }
    [[nodiscard]] VkSurfaceKHR surface() const { return surface_; }
    [[nodiscard]] VkQueue graphicsQueue() const { return graphicsQueue_; }
    [[nodiscard]] VkQueue presentQueue() const { return presentQueue_; }
 
+   // Swap chain and memory helpers.
    [[nodiscard]] SwapChainSupportDetails getSwapChainSupport() const { return querySwapChainSupport(physicalDevice); }
    [[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
    [[nodiscard]] QueueFamilyIndices findPhysicalQueueFamilies() const { return findQueueFamilies(physicalDevice); }
    [[nodiscard]] VkFormat findSupportedFormat(
        const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
-   // Buffer Helper Functions
+   // Buffer and image helpers for resource uploads and staging.
    void createBuffer(
        VkDeviceSize size,
        VkBufferUsageFlags usage,
@@ -68,14 +73,16 @@ namespace vkp::graphics {
        VkImage &image,
        VkDeviceMemory &imageMemory) const;
 
+   // Additional accessors.
    [[nodiscard]] VkInstance getInstance() const;
    [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const;
    [[nodiscard]] uint32_t getGraphicsQueueFamilyIndex() const;
    [[nodiscard]] VkQueue getGraphicsQueue() const;
 
-   VkPhysicalDeviceProperties properties;
+   VkPhysicalDeviceProperties properties; // Physical device properties (limits, features, etc.)
 
   private:
+   // Vulkan setup and teardown routines.
    void createInstance();
    void setupDebugMessenger();
    void createSurface();
@@ -83,17 +90,19 @@ namespace vkp::graphics {
    void createLogicalDevice();
    void createCommandPool();
 
-   // helper functions
+   // Device suitability and extension checks.
    bool isDeviceSuitable(VkPhysicalDevice device) const;
    std::vector<const char *> getRequiredExtensions();
    [[nodiscard]] bool checkValidationLayerSupport() const;
    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
 
+   // Debug and swap chain helpers.
    static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
    void hasGflwRequiredInstanceExtensions();
    bool checkDeviceExtensionSupport(VkPhysicalDevice device) const;
    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
 
+   // Vulkan handles and state.
    VkInstance instance;
    VkDebugUtilsMessengerEXT debugMessenger;
    VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
@@ -105,8 +114,9 @@ namespace vkp::graphics {
    VkQueue graphicsQueue_;
    VkQueue presentQueue_;
 
+   // Required validation layers and device extensions.
    const std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
    const std::vector<const char *> deviceExtensions = {VK_KHR_SWAPCHAIN_EXTENSION_NAME};
  };
 
- }  // namespace vkp::graphics
+}  // namespace vkp::graphics
