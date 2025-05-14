@@ -42,14 +42,14 @@ namespace vkp::graphics {
         void drawFrame();
         void shutdown() const;
 
-        std::unique_ptr<Window> window;
-        std::unique_ptr<vkp::graphics::Device> device;
-        std::unique_ptr<graphics::SwapChain>    swapChain;
-        std::unique_ptr<graphics::Pipeline>     pipeline;
-        VkPipelineLayout                        pipelineLayout{};
+        Window window{ WIDTH, HEIGHT, "rune", 500, 500 };
+        vkp::graphics::Device device{ window };
+        std::unique_ptr<vkp::graphics::SwapChain> swapChain;
+        std::unique_ptr<vkp::graphics::Pipeline>  pipeline;
+        VkPipelineLayout                          pipelineLayout{};
 
-        std::vector<VkCommandBuffer>            commandBuffers;
-        std::unique_ptr<vkp::ImGuiLayer>        imguiLayer;
+        std::vector<VkCommandBuffer>              commandBuffers;
+        std::unique_ptr<vkp::ImGuiLayer>          imguiLayer;
     };
 
 } // namespace vkp::graphics

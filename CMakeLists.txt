@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.20)
 project(vk-pipe-demo LANGUAGES CXX C)
 
+# --------------- OPTIONS -----------------------------------------------------
+option(ENGINE_SHARED "Build engine as a DLL" ON)
+
 # --------------- GLOBALS -----------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
 
@@ -10,16 +13,21 @@ if (MSVC)
 endif()
 
 # ─────────────────── Sources ────────────────────────────────────────────────
-
-
-
 file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/engine/*.cpp" "${CMAKE_SOURCE_DIR}/engine/*.h")
 
-add_library(engine STATIC ${ENGINE_SRC})
+if (ENGINE_SHARED)
+    add_library(engine SHARED ${ENGINE_SRC})
+else()
+    add_library(engine STATIC ${ENGINE_SRC})
+endif()
 
 set_target_properties(engine PROPERTIES
         WINDOWS_EXPORT_ALL_SYMBOLS ON
         POSITION_INDEPENDENT_CODE ON)
+
+target_compile_definitions(engine
+    PUBLIC $<$<BOOL:ENGINE_SHARED>:ENGINE_SHARED>
+)
 
 target_include_directories(engine PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -45,7 +53,7 @@ target_link_libraries(engine
 )
 
 # ──────────── per‑config output folders for engine ──────────────────────────
-foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFG_UPPER)
     set_target_properties(engine PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
@@ -59,8 +67,13 @@ add_executable(demo "main.cpp")
 target_link_libraries(demo PRIVATE engine)
 target_include_directories(demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
+# ──────────── delay‑load the engine DLL for hot‑reload (Windows only) ───────
+if (WIN32 AND ENGINE_SHARED)
+    set_property(TARGET demo APPEND PROPERTY LINK_OPTIONS "/DELAYLOAD:engine.dll")
+endif()
+
 # ──────────── per‑config output folders for demo ──────────────────────────
-foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFG_UPPER)
     set_target_properties(demo PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
@@ -71,8 +84,8 @@ endforeach()
 
 # ──────────── copy DLLs next to the exe -------------------------------------
 
-# 1. copy the engine itself (if shared, harmless if duplicated by step 2)
-if (WIN32)
+# 1. copy the engine itself (explicit, harmless if duplicated by step 2)
+if (WIN32 AND ENGINE_SHARED)
     add_custom_command(TARGET demo POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_FILE:engine>
@@ -87,11 +100,31 @@ add_custom_command(TARGET demo POST_BUILD
     COMMAND_EXPAND_LISTS
 )
 
+# 3. copy Vulkan runtime DLL if found (Windows only)
+if (WIN32)
+    find_path(VULKAN_BIN_PATH NAMES vulkan-1.dll PATHS
+        "$ENV{VULKAN_SDK}/Bin"
+        "$ENV{VULKAN_SDK}/Bin32"
+        "$ENV{VULKAN_SDK}/Bin64"
+        "${CMAKE_SOURCE_DIR}/external/vulkan/Bin"
+        "${CMAKE_SOURCE_DIR}/external/vulkan/Bin32"
+        "${CMAKE_SOURCE_DIR}/external/vulkan/Bin64"
+        NO_DEFAULT_PATH
+    )
+    if (VULKAN_BIN_PATH)
+        add_custom_command(TARGET demo POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${VULKAN_BIN_PATH}/vulkan-1.dll"
+                $<TARGET_FILE_DIR:demo>
+            COMMENT "Copying vulkan-1.dll to output directory"
+        )
+    endif()
+endif()
 
 # ──────────── copy all *.spv shaders into output dir ───────────────
 file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/shaders/*.spv")
 
-foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFG_UPPER)
     add_custom_command(TARGET demo POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:demo>/shaders"
@@ -101,9 +134,3 @@ foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
         COMMENT "Copying all .spv shaders to output directory (${cfg})"
     )
 endforeach()
-
-
-
-
-
-
