@@ -99,6 +99,13 @@ if (WIN32)
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 $<TARGET_RUNTIME_DLLS:demo>
                 $<TARGET_FILE_DIR:demo>
+        COMMAND_EXPAND_LISTS
+    )
+else()
+    add_custom_command(TARGET demo POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:demo>
+                $<TARGET_FILE_DIR:demo>
     )
 endif()
 
