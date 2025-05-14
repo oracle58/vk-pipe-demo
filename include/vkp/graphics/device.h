@@ -72,7 +72,6 @@ namespace vkp::graphics {
    [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const;
    [[nodiscard]] uint32_t getGraphicsQueueFamilyIndex() const;
    [[nodiscard]] VkQueue getGraphicsQueue() const;
-   [[nodiscard]] VkExtent2D surfaceExtent() const;
 
    VkPhysicalDeviceProperties properties;
 
