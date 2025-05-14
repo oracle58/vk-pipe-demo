@@ -6,8 +6,8 @@ namespace vkp {
 ImGuiLayer::ImGuiLayer(Window& window,
                        vkp::graphics::Device& device,
                        vkp::graphics::SwapChain& swapChain,
-                       VkRenderPass renderPass,
-                       uint32_t subpass)
+                       const VkRenderPass renderPass,
+                       const uint32_t subpass)
     : window_(window)
     , device_(device)
     , swapChain_(swapChain)

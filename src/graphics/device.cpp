@@ -35,7 +35,7 @@
  
  void DestroyDebugUtilsMessengerEXT(
      const VkInstance instance,
-     VkDebugUtilsMessengerEXT debugMessenger,
+     const VkDebugUtilsMessengerEXT debugMessenger,
      const VkAllocationCallbacks *pAllocator) {
    const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(
      instance,
@@ -194,7 +194,7 @@
  
  void Device::createSurface() { window.createSurface(instance, &surface_); }
  
- bool Device::isDeviceSuitable(VkPhysicalDevice device) {
+ bool Device::isDeviceSuitable(VkPhysicalDevice device) const {
    QueueFamilyIndices indices = findQueueFamilies(device);
  
    bool extensionsSupported = checkDeviceExtensionSupport(device);
@@ -212,7 +212,7 @@
           supportedFeatures.samplerAnisotropy;
  }
  
- void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) const {
+ void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) {
    createInfo = {};
    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT |
@@ -543,4 +543,4 @@
  VkQueue Device::getGraphicsQueue() const {
    return graphicsQueue_;
  }
-}  // namespace vkp::graphics 
+}  // namespace vkp::graphics

@@ -43,10 +43,10 @@ namespace vkp::graphics {
    [[nodiscard]] VkQueue graphicsQueue() const { return graphicsQueue_; }
    [[nodiscard]] VkQueue presentQueue() const { return presentQueue_; }
 
-   SwapChainSupportDetails getSwapChainSupport() { return querySwapChainSupport(physicalDevice); }
-   uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
-   QueueFamilyIndices findPhysicalQueueFamilies() { return findQueueFamilies(physicalDevice); }
-   VkFormat findSupportedFormat(
+   [[nodiscard]] SwapChainSupportDetails getSwapChainSupport() const { return querySwapChainSupport(physicalDevice); }
+   [[nodiscard]] uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties) const;
+   [[nodiscard]] QueueFamilyIndices findPhysicalQueueFamilies() const { return findQueueFamilies(physicalDevice); }
+   [[nodiscard]] VkFormat findSupportedFormat(
        const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 
    // Buffer Helper Functions
@@ -56,7 +56,7 @@ namespace vkp::graphics {
        VkMemoryPropertyFlags properties,
        VkBuffer &buffer,
        VkDeviceMemory &bufferMemory) const;
-   VkCommandBuffer beginSingleTimeCommands() const;
+   [[nodiscard]] VkCommandBuffer beginSingleTimeCommands() const;
    void endSingleTimeCommands(VkCommandBuffer commandBuffer) const;
    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) const;
    void copyBufferToImage(
@@ -68,15 +68,11 @@ namespace vkp::graphics {
        VkImage &image,
        VkDeviceMemory &imageMemory) const;
 
-   VkInstance getInstance() const;
-
-   VkPhysicalDevice getPhysicalDevice() const;
-
-   uint32_t getGraphicsQueueFamilyIndex() const;
-
-   VkQueue getGraphicsQueue() const;
-
-   VkExtent2D surfaceExtent() const;
+   [[nodiscard]] VkInstance getInstance() const;
+   [[nodiscard]] VkPhysicalDevice getPhysicalDevice() const;
+   [[nodiscard]] uint32_t getGraphicsQueueFamilyIndex() const;
+   [[nodiscard]] VkQueue getGraphicsQueue() const;
+   [[nodiscard]] VkExtent2D surfaceExtent() const;
 
    VkPhysicalDeviceProperties properties;
 
@@ -89,11 +85,12 @@ namespace vkp::graphics {
    void createCommandPool();
 
    // helper functions
-   bool isDeviceSuitable(VkPhysicalDevice device);
+   bool isDeviceSuitable(VkPhysicalDevice device) const;
    std::vector<const char *> getRequiredExtensions();
    [[nodiscard]] bool checkValidationLayerSupport() const;
    QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const;
-   void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo) const;
+
+   static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
    void hasGflwRequiredInstanceExtensions();
    bool checkDeviceExtensionSupport(VkPhysicalDevice device) const;
    SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device) const;
