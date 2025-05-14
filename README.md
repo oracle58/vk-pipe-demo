@@ -1,9 +1,9 @@
 # vk-pipe-demo
 
-A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and showcases the **Dirac delta (plate) trick** implemented in GLSL shaders.
+A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and showcases the *Dirac Plate trick* implemented in GLSL shaders.
 
 ![vk-pipe-demo](https://github.com/user-attachments/assets/7d5e3ba3-8634-47a3-a950-79cc0525e578)
-> Example fragment shader demonstrating the [Plate/Delta Trick](https://en.wikipedia.org/wiki/Plate_trick).
+> Example fragment shader demonstrating the [Plate Trick](https://en.wikipedia.org/wiki/Plate_trick).
 
 ---
 
@@ -18,7 +18,7 @@ A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and sho
 
 ## 🛠 Build Instructions
 
-### ✅ Prerequisites
+### Prerequisites
 - CMake
 - VCPKG (for dependency management) 
 - Vulkan SDK
@@ -35,7 +35,8 @@ cmake --build build --config debug
 ./bin/debug/demo
 ```
 
-### Linux (tested on Ubuntu/Arch)
+### Linux 
+> Only tested on arch so far.
 
 #### 1. Install system dependencies
 
@@ -49,22 +50,20 @@ sudo apt install build-essential cmake git pkg-config \
 
 **Arch Linux:**
 ```shell
-sudo pacman -Syu --needed base-devel cmake git pkgconf \
+sudo pacman -Syu --needed base-devel cmake pkgconf \
     vulkan-icd-loader vulkan-validation-layers \
     glfw-x11 glm fmt nvidia nvidia-utils libglvnd \
-    lib32-nvidia-utils vulkan-driver vulkan-tools mesa-utils \
+    lib32-nvidia-utils vulkan-driver vulkan-tools \
 ```
+
 - For **AMD GPUs**: replace `nvidia nvidia-utils lib32-nvidia-utils` with `vulkan-radeon lib32-vulkan-radeon`.
 - For **Intel GPUs**: replace with `vulkan-intel lib32-vulkan-intel`.
 - `vulkan-tools` provides `vulkaninfo` for troubleshooting.
 - `libglvnd` ensures proper OpenGL/Vulkan dispatch.
-- Make sure your user is in the `video` group:  
-  ```shell
-  sudo usermod -aG video $USER
-  ```
+- Make sure your user is in the `video` group:  `sudo usermod -aG video $USER`
 - Reboot after installing drivers.
 
-#### 2. Install Vulkan SDK (optional, for shader compilation/tools)
+#### 2. Install Vulkan SDK 
 
 - Download from [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
 - Extract and follow their setup instructions (add to `PATH` etc.)
