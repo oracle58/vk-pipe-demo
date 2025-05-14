@@ -33,3 +33,5 @@ cmake -S . -B build `
 
 cmake --build build --config Debug
 ```
+
+-DCMAKE_TOOLCHAIN_FILE=C:/Users/voids/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows 

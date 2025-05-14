@@ -1,5 +1,6 @@
 #include <vkp/graphics/device.h>
- 
+#include <vkp/logger.h>
+
 #include <cstring>
 #include <iostream>
 #include <set>
@@ -47,12 +48,20 @@ void DestroyDebugUtilsMessengerEXT(
  
 // class member functions
 Device::Device(Window &window) : window{window} {
+  LOG_DEBUG("Device::Device - begin");
+  LOG_DEBUG("Device::createInstance");
   createInstance();
+  LOG_DEBUG("Device::setupDebugMessenger");
   setupDebugMessenger();
+  LOG_DEBUG("Device::createSurface");
   createSurface();
+  LOG_DEBUG("Device::pickPhysicalDevice");
   pickPhysicalDevice();
+  LOG_DEBUG("Device::createLogicalDevice");
   createLogicalDevice();
+  LOG_DEBUG("Device::createCommandPool");
   createCommandPool();
+  LOG_DEBUG("Device::Device - end");
 }
 
 Device::~Device() {
@@ -68,10 +77,18 @@ Device::~Device() {
 }
  
 void Device::createInstance() {
-  if (enableValidationLayers && !checkValidationLayerSupport()) {
-    throw std::runtime_error("validation layers requested, but not available!");
+  LOG_DEBUG("Device::createInstance - begin");
+
+  if (enableValidationLayers) {
+    LOG_DEBUG("Checking validation layer support...");
+    if (!checkValidationLayerSupport()) {
+      LOG_DEBUG("Validation layers requested, but not available!");
+      throw std::runtime_error("validation layers requested, but not available!");
+    }
+    LOG_DEBUG("Validation layers supported.");
   }
 
+  LOG_DEBUG("Filling VkApplicationInfo...");
   VkApplicationInfo appInfo = {};
   appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   appInfo.pApplicationName = "LittleVulkanEngine App";
@@ -80,16 +97,23 @@ void Device::createInstance() {
   appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
   appInfo.apiVersion = VK_API_VERSION_1_0;
 
+  LOG_DEBUG("Filling VkInstanceCreateInfo...");
   VkInstanceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   createInfo.pApplicationInfo = &appInfo;
 
+  LOG_DEBUG("Getting required extensions...");
   const auto extensions = getRequiredExtensions();
+  LOG_DEBUG("Required extensions count: {}", extensions.size());
+  for (const auto& ext : extensions) {
+    LOG_DEBUG("  Extension: {}", ext);
+  }
   createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
   createInfo.ppEnabledExtensionNames = extensions.data();
 
   VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
   if (enableValidationLayers) {
+    LOG_DEBUG("Setting up validation layers...");
     createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
     createInfo.ppEnabledLayerNames = validationLayers.data();
 
@@ -100,14 +124,20 @@ void Device::createInstance() {
     createInfo.pNext = nullptr;
   }
 
-  if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS) {
+  LOG_DEBUG("Calling vkCreateInstance...");
+  VkResult result = vkCreateInstance(&createInfo, nullptr, &instance);
+  if (result != VK_SUCCESS) {
+    LOG_FATAL("vkCreateInstance failed with code {}", static_cast<int>(result));
     throw std::runtime_error("failed to create instance!");
   }
+  LOG_DEBUG("vkCreateInstance succeeded.");
 
   hasGflwRequiredInstanceExtensions();
+  LOG_DEBUG("Device::createInstance - end");
 }
 
 void Device::pickPhysicalDevice() {
+  LOG_DEBUG("Device::pickPhysicalDevice - begin");
   uint32_t deviceCount = 0;
   vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
   if (deviceCount == 0) {
@@ -130,9 +160,11 @@ void Device::pickPhysicalDevice() {
 
   vkGetPhysicalDeviceProperties(physicalDevice, &properties);
   std::cout << "physical device: " << properties.deviceName << std::endl;
+  LOG_DEBUG("Device::pickPhysicalDevice - end");
 }
  
 void Device::createLogicalDevice() {
+  LOG_DEBUG("Device::createLogicalDevice - begin");
   QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -176,9 +208,11 @@ void Device::createLogicalDevice() {
 
   vkGetDeviceQueue(device_, indices.graphicsFamily, 0, &graphicsQueue_);
   vkGetDeviceQueue(device_, indices.presentFamily, 0, &presentQueue_);
+  LOG_DEBUG("Device::createLogicalDevice - end");
 }
  
 void Device::createCommandPool() {
+  LOG_DEBUG("Device::createCommandPool - begin");
   const QueueFamilyIndices queueFamilyIndices = findPhysicalQueueFamilies();
 
   VkCommandPoolCreateInfo poolInfo = {};
@@ -190,9 +224,14 @@ void Device::createCommandPool() {
   if (vkCreateCommandPool(device_, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
     throw std::runtime_error("failed to create command pool!");
   }
+  LOG_DEBUG("Device::createCommandPool - end");
 }
 
-void Device::createSurface() { window.createSurface(instance, &surface_); }
+void Device::createSurface() {
+  LOG_DEBUG("Device::createSurface - begin");
+  window.createSurface(instance, &surface_);
+  LOG_DEBUG("Device::createSurface - end");
+}
 
 bool Device::isDeviceSuitable(VkPhysicalDevice device) {
   QueueFamilyIndices indices = findQueueFamilies(device);
@@ -226,20 +265,35 @@ void Device::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT
 }
 
 void Device::setupDebugMessenger() {
+  LOG_DEBUG("Device::setupDebugMessenger - begin");
   if (!enableValidationLayers) return;
   VkDebugUtilsMessengerCreateInfoEXT createInfo;
   populateDebugMessengerCreateInfo(createInfo);
   if (CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS) {
     throw std::runtime_error("failed to set up debug messenger!");
   }
+  LOG_DEBUG("Device::setupDebugMessenger - end");
 }
 
+//TODO: Somewhere here it crashes
 bool Device::checkValidationLayerSupport() const {
-  uint32_t layerCount;
-  vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-
+  LOG_DEBUG("checkValidationLayerSupport: calling vkEnumerateInstanceLayerProperties...");
+  std::cout << "vkEnumerateInstanceLayerProperties ptr: " << (void*)vkEnumerateInstanceLayerProperties << std::endl;
+  uint32_t layerCount = 0;
+  VkResult res = vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+  
+  LOG_DEBUG("checkValidationLayerSupport: vkEnumerateInstanceLayerProperties returned {}, layerCount={}", static_cast<int>(res), layerCount);
+  if (res != VK_SUCCESS) {
+    LOG_FATAL("vkEnumerateInstanceLayerProperties failed with code {}", static_cast<int>(res));
+    return false;
+  }
   std::vector<VkLayerProperties> availableLayers(layerCount);
-  vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+  res = vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+  LOG_DEBUG("checkValidationLayerSupport: 2nd call returned {}", static_cast<int>(res));
+  if (res != VK_SUCCESS) {
+    LOG_FATAL("vkEnumerateInstanceLayerProperties (2nd call) failed with code {}", static_cast<int>(res));
+    return false;
+  }
 
   for (const char *layerName : validationLayers) {
     bool layerFound = false;

@@ -1,7 +1,11 @@
 # ─────────────────── Sources ────────────────────────────────────────────────
-file(GLOB_RECURSE SRC "*.cpp")
+file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "*.cpp" "*.h")
 
 add_library(src STATIC ${SRC})
+
+set_target_properties(src PROPERTIES
+        WINDOWS_EXPORT_ALL_SYMBOLS ON
+        POSITION_INDEPENDENT_CODE ON)
 
 target_include_directories(src PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
@@ -25,3 +29,40 @@ target_link_libraries(src
     $<$<TARGET_EXISTS:volk::volk>:volk::volk>
     imgui::imgui
 )
+
+# ──────────── Executable ────────────────────────────────────────────────────
+add_executable(vk-pipe-demo "main.cpp")
+target_link_libraries(vk-pipe-demo PRIVATE src)
+target_include_directories(vk-pipe-demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+# ──────────── per‑config output folders ─────────────────────────────────────
+foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER "${cfg}" CFG_UPPER)
+    set_target_properties(vk-pipe-demo PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
+        LIBRARY_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
+        ARCHIVE_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/intermediate/${cfg}"
+    )
+endforeach()
+
+# ──────────── copy all runtime DLL dependencies ─────────────────────────────
+add_custom_command(TARGET vk-pipe-demo POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:vk-pipe-demo>
+            $<TARGET_FILE_DIR:vk-pipe-demo>
+    COMMAND_EXPAND_LISTS
+)
+
+# ──────────── copy all *.spv shaders into output dir ───────────────
+file(GLOB_RECURSE SHADER_FILES CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/shaders/*.spv")
+
+foreach(cfg IN ITEMS Debug Release RelWithDebInfo MinSizeRel)
+    string(TOUPPER "${cfg}" CFG_UPPER)
+    add_custom_command(TARGET vk-pipe-demo POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:vk-pipe-demo>/shaders"
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${SHADER_FILES}
+            "$<TARGET_FILE_DIR:vk-pipe-demo>/shaders"
+        COMMENT "Copying all .spv shaders to output directory (${cfg})"
+    )
+endforeach()
