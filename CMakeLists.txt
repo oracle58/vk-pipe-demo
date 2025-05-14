@@ -94,12 +94,20 @@ if (WIN32 AND REND_SHARED)
 endif()
 
 # 2. copy *all* runtime DLL dependencies (transitive vcpkg DLLs, etc.)
-add_custom_command(TARGET demo POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_RUNTIME_DLLS:demo>
-            $<TARGET_FILE_DIR:demo>
-    COMMAND_EXPAND_LISTS
-)
+if (WIN32)
+    add_custom_command(TARGET demo POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:demo>
+                $<TARGET_FILE_DIR:demo>
+        COMMAND_EXPAND_LISTS
+    )
+else()
+    add_custom_command(TARGET demo POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                $<TARGET_RUNTIME_DLLS:demo>
+                $<TARGET_FILE_DIR:demo>
+    )
+endif()
 
 # 3. copy Vulkan runtime DLL if found (Windows only)
 if (WIN32)
@@ -135,3 +143,11 @@ foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
         COMMENT "Copying all .spv shaders to output directory (${cfg})"
     )
 endforeach()
+
+# ──────────── Linux-specific: set RPATH for Vulkan/GLFW/etc. ────────────────
+if (UNIX AND NOT APPLE)
+    set_target_properties(demo PROPERTIES
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "$ORIGIN"
+    )
+endif()

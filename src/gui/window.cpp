@@ -8,11 +8,24 @@ namespace vkp {
         }
 
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+
+        // Platform-specific: set X11/Wayland hints if needed (Linux)
+    #if defined(__linux__)
+        // Optionally force X11 if both X11 and Wayland are available
+        // glfwWindowHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        // Or: glfwWindowHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+    #endif
+
         window = glfwCreateWindow(width, height, title.c_str(), nullptr, nullptr);
         if (!window) {
             LOG_FATAL("Failed to create GLFW window.");
             glfwTerminate();
+            return;
         }
+
+        // Set user pointer and framebuffer resize callback for proper resizing
+        glfwSetWindowUserPointer(window, this);
+        glfwSetFramebufferSizeCallback(window, framebufferResizeCallback);
 
         init();
     }
@@ -34,6 +47,7 @@ namespace vkp {
 
     void Window::init() const {
         GLFWmonitor* primary = glfwGetPrimaryMonitor();
+        if (!primary) return; // Defensive: avoid null deref if no monitor
         int x, y, w, h;
         glfwGetMonitorWorkarea(primary, &x, &y, &w, &h);
         glfwSetWindowPos(window, x + (w - width) / 2, y + (h - height) / 2);
