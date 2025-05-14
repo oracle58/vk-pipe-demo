@@ -136,6 +136,7 @@ void SwapChain::createSwapChain() {
   VkExtent2D extent = chooseSwapExtent(capabilities);
 
   uint32_t imageCount = capabilities.minImageCount + 1;
+  // Clamp image count to max if the surface imposes a limit.
   if (capabilities.maxImageCount > 0 &&
       imageCount > capabilities.maxImageCount) {
     imageCount = capabilities.maxImageCount;
@@ -155,6 +156,7 @@ void SwapChain::createSwapChain() {
   QueueFamilyIndices indices = device.findPhysicalQueueFamilies();
   uint32_t queueFamilyIndices[] = {indices.graphicsFamily, indices.presentFamily};
 
+  // If graphics and present queues are different, enable concurrent sharing.
   if (indices.graphicsFamily != indices.presentFamily) {
     createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
     createInfo.queueFamilyIndexCount = 2;
@@ -177,10 +179,7 @@ void SwapChain::createSwapChain() {
     throw std::runtime_error("failed to create swap chain!");
   }
 
-  // we only specified a minimum number of images in the swap chain, so the implementation is
-  // allowed to create a swap chain with more. That's why we'll first query the final number of
-  // images with vkGetSwapchainImagesKHR, then resize the container and finally call it again to
-  // retrieve the handles.
+  // Implementation may create more images than requested, so query the actual count.
   vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, nullptr);
   swapChainImages.resize(imageCount);
   vkGetSwapchainImagesKHR(device.device(), swapChain, &imageCount, swapChainImages.data());
@@ -387,6 +386,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(
     }
   }
 
+  // Uncomment for immediate mode (tearing, but lowest latency)
   // for (const auto &availablePresentMode : availablePresentModes) {
   //   if (availablePresentMode == VK_PRESENT_MODE_IMMEDIATE_KHR) {
   //     std::cout << "Present mode: Immediate" << std::endl;
@@ -399,6 +399,7 @@ VkPresentModeKHR SwapChain::chooseSwapPresentMode(
 }
 
 VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities) const {
+  // If the surface size is defined, use it. Otherwise, clamp to allowed extents.
   if (capabilities.currentExtent.width != std::numeric_limits<uint32_t>::max()) {
     return capabilities.currentExtent;
   } else {
