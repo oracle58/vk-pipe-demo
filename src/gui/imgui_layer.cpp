@@ -1,4 +1,4 @@
-#include <vkp/imgui_layer.h>
+#include <vkp/gui/imgui_layer.h>
 #include <vkp/logger.h>
 
 namespace vkp {

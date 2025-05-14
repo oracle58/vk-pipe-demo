@@ -1,32 +1,33 @@
 #pragma once
 
-#include <vkp/window.h>
+#include <vkp/gui/window.h>
+#include <vkp/gui/imgui_layer.h>
+
 #include "device.h"
 #include "pipeline.h"
 #include "swap_chain.h"
-#include "../imgui_layer.h"
 
 #include <memory>
 #include <vector>
 
 namespace vkp::graphics {
 
-    struct engine_conf {
+    struct renderer_conf {
         int start_pos_x;
         int start_pos_y;
         int start_width;
         int start_height;
         const char* name;
     };
-    class Engine {
+    class Renderer {
     public:
         static constexpr int WIDTH  = 1280;
         static constexpr int HEIGHT = 720;
 
-        Engine();
-        ~Engine();
+        Renderer();
+        ~Renderer();
 
-        bool init(const engine_conf& config); 
+        bool init(const renderer_conf& config);
         bool run();
 
     private:

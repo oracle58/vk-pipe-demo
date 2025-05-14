@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 project(vk-pipe-demo LANGUAGES CXX C)
 
 # --------------- OPTIONS -----------------------------------------------------
-option(ENGINE_SHARED "Build engine as a DLL" ON)
+option(REND_SHARED "Build renderer as a DLL" ON)
 
 # --------------- GLOBALS -----------------------------------------------------
 set(CMAKE_CXX_STANDARD 20)
@@ -13,23 +13,24 @@ if (MSVC)
 endif()
 
 # ─────────────────── Sources ────────────────────────────────────────────────
-file(GLOB_RECURSE ENGINE_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/engine/*.cpp" "${CMAKE_SOURCE_DIR}/engine/*.h")
+file(GLOB_RECURSE RENDERER_SRC CONFIGURE_DEPENDS "${CMAKE_SOURCE_DIR}/src/*.cpp" "${CMAKE_SOURCE_DIR}/include/*.h")
+list(FILTER RENDERER_SRC EXCLUDE REGEX ".*main\\.cpp$")
 
-if (ENGINE_SHARED)
-    add_library(engine SHARED ${ENGINE_SRC})
+if (REND_SHARED)
+    add_library(renderer SHARED ${RENDERER_SRC})
 else()
-    add_library(engine STATIC ${ENGINE_SRC})
+    add_library(renderer STATIC ${RENDERER_SRC})
 endif()
 
-set_target_properties(engine PROPERTIES
+set_target_properties(renderer PROPERTIES
         WINDOWS_EXPORT_ALL_SYMBOLS ON
         POSITION_INDEPENDENT_CODE ON)
 
-target_compile_definitions(engine
-    PUBLIC $<$<BOOL:ENGINE_SHARED>:ENGINE_SHARED>
+target_compile_definitions(renderer
+    PUBLIC $<$<BOOL:REND_SHARED>:REND_SHARED>
 )
 
-target_include_directories(engine PUBLIC
+target_include_directories(renderer PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/include
 )
@@ -42,7 +43,7 @@ find_package(Vulkan REQUIRED)
 find_package(volk  CONFIG QUIET)
 find_package(imgui CONFIG REQUIRED)
 
-target_link_libraries(engine
+target_link_libraries(renderer
     PUBLIC
     glfw
     glm::glm
@@ -52,10 +53,10 @@ target_link_libraries(engine
     imgui::imgui
 )
 
-# ──────────── per‑config output folders for engine ──────────────────────────
+# ──────────── per‑config output folders for renderer ──────────────────────────
 foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
     string(TOUPPER "${cfg}" CFG_UPPER)
-    set_target_properties(engine PROPERTIES
+    set_target_properties(renderer PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
         LIBRARY_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/${cfg}"
         ARCHIVE_OUTPUT_DIRECTORY_${CFG_UPPER}       "${CMAKE_SOURCE_DIR}/bin/intermediate/${cfg}"
@@ -63,13 +64,13 @@ foreach(cfg IN ITEMS debug release RelWithDebInfo MinSizeRel)
 endforeach()
 
 # ──────────── Executable ────────────────────────────────────────────────────
-add_executable(demo "main.cpp")
-target_link_libraries(demo PRIVATE engine)
+add_executable(demo "src/main.cpp")
+target_link_libraries(demo PRIVATE renderer)
 target_include_directories(demo PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-# ──────────── delay‑load the engine DLL for hot‑reload (Windows only) ───────
-if (WIN32 AND ENGINE_SHARED)
-    set_property(TARGET demo APPEND PROPERTY LINK_OPTIONS "/DELAYLOAD:engine.dll")
+# ──────────── delay‑load the renderer DLL for hot‑reload (Windows only) ───────
+if (WIN32 AND REND_SHARED)
+    set_property(TARGET demo APPEND PROPERTY LINK_OPTIONS "/DELAYLOAD:renderer.dll")
 endif()
 
 # ──────────── per‑config output folders for demo ──────────────────────────
@@ -84,11 +85,11 @@ endforeach()
 
 # ──────────── copy DLLs next to the exe -------------------------------------
 
-# 1. copy the engine itself (explicit, harmless if duplicated by step 2)
-if (WIN32 AND ENGINE_SHARED)
+# 1. copy the renderer itself (explicit, harmless if duplicated by step 2)
+if (WIN32 AND REND_SHARED)
     add_custom_command(TARGET demo POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:engine>
+                $<TARGET_FILE:renderer>
                 $<TARGET_FILE_DIR:demo>)
 endif()
 

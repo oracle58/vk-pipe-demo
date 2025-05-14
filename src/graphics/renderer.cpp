@@ -1,4 +1,4 @@
-#include <vkp/graphics/engine.h>
+#include <vkp/graphics/renderer.h>
 #include <vkp/logger.h>
 
 #include <array>
@@ -15,13 +15,13 @@ namespace vkp::graphics {
         float     time;
     };
 
-    Engine::Engine() = default;
+    Renderer::Renderer() = default;
 
-    Engine::~Engine() {
+    Renderer::~Renderer() {
         shutdown();
     }
 
-    bool Engine::init(const engine_conf& config) {  
+    bool Renderer::init(const renderer_conf& config) {
         width_     = config.start_width;
         height_    = config.start_height;
 
@@ -36,7 +36,7 @@ namespace vkp::graphics {
         return true;
     }
 
-    bool Engine::run() {
+    bool Renderer::run() {
         while (!window.shouldClose()) {
             glfwPollEvents();
             drawFrame();
@@ -45,12 +45,12 @@ namespace vkp::graphics {
         return true;
     }
 
-    void Engine::shutdown() const {
+    void Renderer::shutdown() const {
         imguiLayer->OnDetach();
         vkDestroyPipelineLayout(device.device(), pipelineLayout, nullptr);
     }
 
-    void Engine::createPipelineLayout() {
+    void Renderer::createPipelineLayout() {
         VkPushConstantRange pushConstantRange{};
         pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT
                                      | VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -71,7 +71,7 @@ namespace vkp::graphics {
         }
     }
 
-    void Engine::recreateSwapChain() {
+    void Renderer::recreateSwapChain() {
         auto extent = window.getExtent();
         while (extent.width == 0 || extent.height == 0) {
             extent = window.getExtent();
@@ -92,7 +92,7 @@ namespace vkp::graphics {
         createPipeline();
     }
 
-    void Engine::createPipeline() {
+    void Renderer::createPipeline() {
         assert(swapChain && "Cannot create pipeline before swap chain");
         assert(pipelineLayout && "Cannot create pipeline before layout");
 
@@ -109,7 +109,7 @@ namespace vkp::graphics {
         );
     }
 
-    void Engine::createCommandBuffers() {
+    void Renderer::createCommandBuffers() {
         commandBuffers.resize(swapChain->imageCount());
         VkCommandBufferAllocateInfo alloc{};
         alloc.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -124,7 +124,7 @@ namespace vkp::graphics {
         }
     }
 
-    void Engine::freeCommandBuffers() {
+    void Renderer::freeCommandBuffers() {
         vkFreeCommandBuffers(
             device.device(),
             device.getCommandPool(),
@@ -134,7 +134,7 @@ namespace vkp::graphics {
         commandBuffers.clear();
     }
 
-    void Engine::recordCommandBuffer(int imageIndex) const {
+    void Renderer::recordCommandBuffer(int imageIndex) const {
         static int frame = 0;
         frame = (frame + 1) % 100;
 
@@ -195,7 +195,7 @@ namespace vkp::graphics {
         }
     }
 
-    void Engine::drawFrame() {
+    void Renderer::drawFrame() {
         uint32_t imageIndex;
         auto result = swapChain->acquireNextImage(&imageIndex);
 

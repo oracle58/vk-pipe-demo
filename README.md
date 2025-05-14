@@ -7,7 +7,7 @@ A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and sho
 
 ---
 
-## 🔧 Features
+## Features
 
 - Minimal Vulkan setup with explicit graphics pipeline configuration
 - Custom GLSL vertex and fragment shaders
@@ -20,18 +20,18 @@ A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and sho
 
 ### ✅ Prerequisites
 - CMake
-- VCPKG (for dependency management)
+- VCPKG (for dependency management) 
 - Vulkan SDK
 - A C++20-capable compiler
 
 ### Windows
 
 ```shell
-cmake -S . -B build `
-  -DCMAKE_TOOLCHAIN_FILE="$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake" `
-  -DVCPKG_TARGET_TRIPLET=x64-windows `
-
+# configure and resolve dependencies
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$env:USERPROFILE\vcpkg\scripts\buildsystems\vcpkg.cmake" -DVCPKG_TARGET_TRIPLET=x64-windows
+# compile and link
 cmake --build build --config debug
+# run
+./bin/debug/demo
 ```
 
--DCMAKE_TOOLCHAIN_FILE=C:/Users/voids/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows 

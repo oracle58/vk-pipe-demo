@@ -1,9 +1,9 @@
-#include <vkp/graphics/engine.h>
+#include <vkp/graphics/renderer.h>
 #include <vkp/logger.h>
 
 int main() {
-    vkp::graphics::Engine engine;
-    vkp::graphics::engine_conf conf;
+    vkp::graphics::Renderer engine;
+    vkp::graphics::renderer_conf conf;
 
     conf.start_pos_x = 100;
     conf.start_pos_y = 100;

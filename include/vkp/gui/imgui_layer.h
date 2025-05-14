@@ -1,6 +1,7 @@
 #pragma once
 
-#include <vkp/window.h>
+#include "window.h"
+
 #include <vkp/graphics/device.h>
 #include <vkp/graphics/swap_chain.h>
 

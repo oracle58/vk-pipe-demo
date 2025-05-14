@@ -1,6 +1,5 @@
-#include <vkp/window.h>
+#include <vkp/gui/window.h>
 #include <vkp/logger.h>
-
 namespace vkp {
     Window::Window(int width, int height, const std::string& title, int pos_x, int pos_y)
         : width(width), height(height), title(title), window(nullptr) {
