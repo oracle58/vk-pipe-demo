@@ -43,7 +43,7 @@ namespace vkp::graphics {
         void drawFrame();
         void shutdown() const;
 
-        Window window{ WIDTH, HEIGHT, "rune", 500, 500 };
+        Window window{ WIDTH, HEIGHT, "demo", 500, 500 };
         vkp::graphics::Device device{ window };
         std::unique_ptr<vkp::graphics::SwapChain> swapChain;
         std::unique_ptr<vkp::graphics::Pipeline>  pipeline;

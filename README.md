@@ -24,6 +24,20 @@ A minimal, low-level Vulkan demo that sets up a custom graphics pipeline and sho
 - Vulkan SDK
 - A C++20-capable compiler
 
+#### Install Vulkan SDK
+
+- Download from [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
+- Extract and follow their setup instructions (add to `PATH` etc.)
+
+#### Install VCPKG and dependencies via VCPKG
+
+```shell
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg install glfw3 glm fmt imgui volk vulkan
+```
+
 ### Windows
 
 ```shell
@@ -37,8 +51,6 @@ cmake --build build --config debug
 
 ### Linux 
 > Only tested on arch so far.
-
-#### 1. Install system dependencies
 
 **Ubuntu:**
 ```shell
@@ -63,21 +75,7 @@ sudo pacman -Syu --needed base-devel cmake pkgconf \
 - Make sure your user is in the `video` group:  `sudo usermod -aG video $USER`
 - Reboot after installing drivers.
 
-#### 2. Install Vulkan SDK 
-
-- Download from [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
-- Extract and follow their setup instructions (add to `PATH` etc.)
-
-#### 3. (Optional) Install VCPKG and dependencies via VCPKG
-
-```shell
-git clone https://github.com/microsoft/vcpkg.git
-cd vcpkg
-./bootstrap-vcpkg.sh
-./vcpkg install glfw3 glm fmt imgui volk vulkan
-```
-
-#### 4. Build the project
+#### Build and run
 
 ```shell
 cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake"
