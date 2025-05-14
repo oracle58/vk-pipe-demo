@@ -1,0 +1,19 @@
+{
+  "name": "vk-pipe-demo",
+  "version-string": "0.0.1",
+  "dependencies": [
+    "vulkan",   
+    "glfw3",           
+    "glm",            
+    "fmt",            
+    "spdlog",          
+    "volk",
+    {
+      "name": "imgui",
+      "features": [
+        "glfw-binding",
+        "vulkan-binding"
+      ]
+    }
+  ]
+}

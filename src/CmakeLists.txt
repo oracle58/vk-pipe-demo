@@ -1,0 +1,27 @@
+# ─────────────────── Sources ────────────────────────────────────────────────
+file(GLOB CORE_SRC "*.cpp")
+
+add_library(src STATIC ${CORE_SRC})
+
+target_include_directories(src PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/include
+)
+
+# ─────────────────── Dependencies ───────────────────────────────────────────
+find_package(glfw3 CONFIG REQUIRED)
+find_package(glm   CONFIG REQUIRED)
+find_package(fmt   CONFIG REQUIRED)
+find_package(Vulkan REQUIRED)
+find_package(volk  CONFIG QUIET)
+find_package(imgui CONFIG REQUIRED)
+
+target_link_libraries(src
+    PUBLIC
+    glfw
+    glm::glm
+    fmt::fmt
+    Vulkan::Vulkan
+    $<$<TARGET_EXISTS:volk::volk>:volk::volk>
+    imgui::imgui
+)
