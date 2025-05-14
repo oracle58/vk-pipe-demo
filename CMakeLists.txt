@@ -12,14 +12,8 @@ add_subdirectory(src)
 add_subdirectory(shaders)
 
 # ───── Generate Binary ──────────────────────────────
-
-file(GLOB_RECURSE SRC_FILES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
-)
-
 add_executable(vk-pipe-demo
     main.cpp
-    ${SRC_FILES}
 )
 
 target_include_directories(vk-pipe-demo PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)

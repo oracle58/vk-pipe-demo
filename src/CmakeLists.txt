@@ -1,7 +1,7 @@
 # ─────────────────── Sources ────────────────────────────────────────────────
-file(GLOB CORE_SRC "*.cpp")
+file(GLOB_RECURSE SRC "*.cpp")
 
-add_library(src STATIC ${CORE_SRC})
+add_library(src STATIC ${SRC})
 
 target_include_directories(src PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}

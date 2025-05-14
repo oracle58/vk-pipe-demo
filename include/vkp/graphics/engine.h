@@ -42,8 +42,8 @@ namespace vkp::graphics {
         void drawFrame();
         void shutdown() const;
 
-        Window window{ WIDTH, HEIGHT, "Delta Trick Demo", 500, 500 };
-        vkp::graphics::Device device{ window };
+        std::unique_ptr<Window> window;
+        std::unique_ptr<vkp::graphics::Device> device;
         std::unique_ptr<graphics::SwapChain>    swapChain;
         std::unique_ptr<graphics::Pipeline>     pipeline;
         VkPipelineLayout                        pipelineLayout{};
