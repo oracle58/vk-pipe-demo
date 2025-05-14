@@ -35,3 +35,58 @@ cmake --build build --config debug
 ./bin/debug/demo
 ```
 
+### Linux (tested on Ubuntu/Arch)
+
+#### 1. Install system dependencies
+
+**Ubuntu:**
+```shell
+sudo apt update
+sudo apt install build-essential cmake git pkg-config \
+    libvulkan-dev vulkan-validationlayers-dev \
+    libglfw3-dev libglm-dev libfmt-dev
+```
+
+**Arch Linux:**
+```shell
+sudo pacman -Syu --needed base-devel cmake git pkgconf \
+    vulkan-icd-loader vulkan-validation-layers \
+    glfw-x11 glm fmt nvidia nvidia-utils libglvnd \
+    lib32-nvidia-utils vulkan-driver vulkan-tools mesa-utils \
+```
+- For **AMD GPUs**: replace `nvidia nvidia-utils lib32-nvidia-utils` with `vulkan-radeon lib32-vulkan-radeon`.
+- For **Intel GPUs**: replace with `vulkan-intel lib32-vulkan-intel`.
+- `vulkan-tools` provides `vulkaninfo` for troubleshooting.
+- `libglvnd` ensures proper OpenGL/Vulkan dispatch.
+- Make sure your user is in the `video` group:  
+  ```shell
+  sudo usermod -aG video $USER
+  ```
+- Reboot after installing drivers.
+
+#### 2. Install Vulkan SDK (optional, for shader compilation/tools)
+
+- Download from [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
+- Extract and follow their setup instructions (add to `PATH` etc.)
+
+#### 3. (Optional) Install VCPKG and dependencies via VCPKG
+
+```shell
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.sh
+./vcpkg install glfw3 glm fmt imgui volk vulkan
+```
+
+#### 4. Build the project
+
+```shell
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE="$HOME/vcpkg/scripts/buildsystems/vcpkg.cmake"
+cmake --build build --config debug
+./build/demo
+```
+
+- If you installed dependencies via your package manager, you can omit the `-DCMAKE_TOOLCHAIN_FILE=...` argument.
+
+---
+
